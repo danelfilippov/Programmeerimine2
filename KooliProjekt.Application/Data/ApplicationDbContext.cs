@@ -7,13 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Data
 {
+   
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 
-        public DbSet<ToDoList> ToDoLists { get; set; }
-        public DbSet<ToDoItem> ToDoItems { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Team> Teams { get; set; }
+        public DbSet<Tournament> tournaments { get; set; }
+        public DbSet<Match> Matchs { get; set; }
+        public DbSet<Leaderboard> Leaderboards { get; set; }
+        public DbSet<Prediction> Predictions { get; set; }
     }
 }
