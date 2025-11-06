@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.TodoLists
 {
-    public class TeamsQueryHandler : IRequestHandler<TeamsQuery, OperationResult<IList<Team>>>
+    public class TeamsQueryHandler : IRequestHandler<TeamsQuery, OperationResult<PagedResult<Team>>>
     {
         private readonly ApplicationDbContext _dbContext;
         public TeamsQueryHandler(ApplicationDbContext dbContext)
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.TodoLists
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<IList<Team>>> Handle(TeamsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Team>>> Handle(TeamsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<IList<Team>>();
+            var result = new OperationResult<PagedResult<Team>>();
             result.Value = await _dbContext
                 .Teams
                 .OrderBy(list => list.Id)
-                .ToListAsync();
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }

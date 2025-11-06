@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.TodoLists
 {
-    public class TournamentsQueryHandler : IRequestHandler<TournamentsQuery, OperationResult<IList<Tournament>>>
+    public class TournamentsQueryHandler : IRequestHandler<TournamentsQuery, OperationResult<PagedResult<Tournament>>>
     {
         private readonly ApplicationDbContext _dbContext;
         public TournamentsQueryHandler(ApplicationDbContext dbContext)
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.TodoLists
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<IList<Tournament>>> Handle(TournamentsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Tournament>>> Handle(TournamentsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<IList<Tournament>>();
+            var result = new OperationResult<PagedResult<Tournament>>();
             result.Value = await _dbContext
                 .tournaments
                 .OrderBy(list => list.Id)
-                .ToListAsync();
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }

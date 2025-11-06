@@ -15,9 +15,8 @@ namespace KooliProjekt.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List([FromQuery] PredictionsQuery query)
         {
-            var query = new PredictionsQuery();
             var result = await _mediator.Send(query);
 
             return Result(result);

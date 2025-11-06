@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.TodoLists
 {
-    public class UsersQueryHandler : IRequestHandler<UsersQuery, OperationResult<IList<User>>>
+    public class UsersQueryHandler : IRequestHandler<UsersQuery, OperationResult<PagedResult<User>>>
     {
         private readonly ApplicationDbContext _dbContext;
         public UsersQueryHandler(ApplicationDbContext dbContext)
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.TodoLists
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<IList<User>>> Handle(UsersQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<User>>> Handle(UsersQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<IList<User>>();
+            var result = new OperationResult<PagedResult<User>>();
             result.Value = await _dbContext
                 .Users
                 .OrderBy(list => list.Id)
-                .ToListAsync();
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }

@@ -15,9 +15,8 @@ namespace KooliProjekt.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List([FromQuery] TeamsQuery query)
         {
-            var query = new TeamsQuery();
             var result = await _mediator.Send(query);
 
             return Result(result);

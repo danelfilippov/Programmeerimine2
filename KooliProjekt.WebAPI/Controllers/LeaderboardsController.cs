@@ -13,11 +13,10 @@ namespace KooliProjekt.WebAPI.Controllers
         {
             _mediator = mediator;
         }
-
+        
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List([FromQuery] LeaderboardsQuery query)
         {
-            var query = new LeaderboardsQuery();
             var result = await _mediator.Send(query);
 
             return Result(result);

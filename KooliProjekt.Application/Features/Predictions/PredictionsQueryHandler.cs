@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.TodoLists
 {
-    public class PredictionsQueryHandler : IRequestHandler<PredictionsQuery, OperationResult<IList<Prediction>>>
+    public class PredictionsQueryHandler : IRequestHandler<PredictionsQuery, OperationResult<PagedResult<Prediction>>>
     {
         private readonly ApplicationDbContext _dbContext;
         public PredictionsQueryHandler(ApplicationDbContext dbContext)
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.TodoLists
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<IList<Prediction>>> Handle(PredictionsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Prediction>>> Handle(PredictionsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<IList<Prediction>>();
+            var result = new OperationResult<PagedResult<Prediction>>();
             result.Value = await _dbContext
                 .Predictions
                 .OrderBy(list => list.Id)
-                .ToListAsync();
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }

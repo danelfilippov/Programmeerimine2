@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.TodoLists
 {
-    public class LeaderboardsQueryHandler : IRequestHandler<LeaderboardsQuery, OperationResult<IList<Leaderboard>>>
+    public class LeaderboardsQueryHandler : IRequestHandler<LeaderboardsQuery, OperationResult<PagedResult<Leaderboard>>>
     {
         private readonly ApplicationDbContext _dbContext;
         public LeaderboardsQueryHandler(ApplicationDbContext dbContext)
@@ -20,13 +20,14 @@ namespace KooliProjekt.Application.Features.TodoLists
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<IList<Leaderboard>>> Handle(LeaderboardsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Leaderboard>>> Handle(LeaderboardsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<IList<Leaderboard>>();
+            var result = new OperationResult<PagedResult<Leaderboard>>();
+
             result.Value = await _dbContext
                 .Leaderboards
                 .OrderBy(list => list.Id)
-                .ToListAsync();
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }
