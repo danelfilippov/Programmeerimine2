@@ -12,27 +12,27 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace KooliProjekt.Application.Features.ToDoLists
 {
-    public class SaveTeamsCommandHandler : IRequestHandler<SaveTeamsCommand, OperationResult>
+    public class SaveUsersCommandHandler : IRequestHandler<SaveUsersCommand, OperationResult>
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public SaveTeamsCommandHandler(ApplicationDbContext dbContext)
+        public SaveUsersCommandHandler(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult> Handle(SaveTeamsCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult> Handle(SaveUsersCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
 
-            var list = new Team();
+            var list = new User();
             if (request.Id == 0)
             {
-                await _dbContext.Teams.AddAsync(list);
+                await _dbContext.Users.AddAsync(list);
             }
             else
             {
-                list = await _dbContext.Teams.FindAsync(request.Id);
+                list = await _dbContext.Users.FindAsync(request.Id);
                 //_dbContext.ToDoLists.Update(list);
             }
 
