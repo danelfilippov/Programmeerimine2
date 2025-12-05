@@ -1,44 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Matchs
 {
     public class SaveMatchsCommandHandler : IRequestHandler<SaveMatchsCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IMatchsRepository _matchsRepository;
 
-        public SaveMatchsCommandHandler(ApplicationDbContext dbContext)
+        public SaveMatchsCommandHandler(IMatchsRepository matchsRepository)
         {
-            _dbContext = dbContext;
+            _matchsRepository = matchsRepository;
         }
 
         public async Task<OperationResult> Handle(SaveMatchsCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
 
-            var list = new Match();
-            if (request.Id == 0)
+            var match = new Match();
+            if (request.Id != 0)
             {
-                await _dbContext.Matchs.AddAsync(list);
-            }
-            else
-            {
-                list = await _dbContext.Matchs.FindAsync(request.Id);
-                //_dbContext.ToDoLists.Update(list);
+                match = await _matchsRepository.GetByIdAsync(request.Id);
             }
 
-            list.Id = request.Id;
+            match.Id = request.Id;
 
-            await _dbContext.SaveChangesAsync();
+            await _matchsRepository.SaveAsync(match);
 
             return result;
         }

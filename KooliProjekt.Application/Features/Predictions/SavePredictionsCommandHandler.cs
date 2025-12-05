@@ -1,18 +1,20 @@
-﻿using KooliProjekt.Application.Data;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
+using KooliProjekt.Application.Features.Leaderboards;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Features.Predictions
 {
     public class SavePredictionsCommandHandler : IRequestHandler<SavePredictionsCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IPredictionsRepository _predictionsRepository;
 
-        public SavePredictionsCommandHandler(ApplicationDbContext dbContext)
+        public SavePredictionsCommandHandler(IPredictionsRepository predictionsRepository)
         {
-            _dbContext = dbContext;
+            _predictionsRepository = predictionsRepository;
         }
 
         public async Task<OperationResult> Handle(SavePredictionsCommand request, CancellationToken cancellationToken)
@@ -20,19 +22,14 @@ namespace KooliProjekt.Application.Features.Predictions
             var result = new OperationResult();
 
             var prediction = new Prediction();
-            if (request.Id == 0)
+            if (request.Id != 0)
             {
-                await _dbContext.Predictions.AddAsync(prediction, cancellationToken);
-            }
-            else
-            {
-                prediction = await _dbContext.Predictions.FindAsync(new object[] { request.Id }, cancellationToken);
-                //_dbContext.Predictions.Update(prediction);
+                prediction = await _predictionsRepository.GetByIdAsync(request.Id);
             }
 
             prediction.Id = request.Id;
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _predictionsRepository.SaveAsync(prediction);
 
             return result;
         }

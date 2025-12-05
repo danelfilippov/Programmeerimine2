@@ -2,7 +2,8 @@
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Matchs
+
 {
     public class SaveMatchsCommand : IRequest<OperationResult>, ITransactional
     {

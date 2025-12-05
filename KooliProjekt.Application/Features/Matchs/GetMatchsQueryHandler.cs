@@ -7,7 +7,7 @@ using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Matchs
 {
     public class GetMatchsQueryHandler : IRequestHandler<GetMatchsQuery, OperationResult<object>>
     {

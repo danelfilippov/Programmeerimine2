@@ -7,7 +7,7 @@ using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Users
 {
     public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, OperationResult<object>>
     {

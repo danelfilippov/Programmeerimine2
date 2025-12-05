@@ -4,7 +4,7 @@ using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
-namespace KooliProjekt.Application.Features.TodoLists
+namespace KooliProjekt.Application.Features.Leaderboards
 {
     public class LeaderboardsQuery : IRequest<OperationResult<PagedResult<Leaderboard>>>
     {

@@ -1,24 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Data.Repositories;
+using KooliProjekt.Application.Features.Leaderboards;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Leaderboards
 {
     public class SaveLeaderboardsCommandHandler : IRequestHandler<SaveLeaderboardsCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ILeaderboardsRepository _leaderboardsRepository;
 
-        public SaveLeaderboardsCommandHandler(ApplicationDbContext dbContext)
+        public SaveLeaderboardsCommandHandler(ILeaderboardsRepository leaderboardsRepository)
         {
-            _dbContext = dbContext;
+            _leaderboardsRepository = leaderboardsRepository;
         }
 
         public async Task<OperationResult> Handle(SaveLeaderboardsCommand request, CancellationToken cancellationToken)
@@ -26,19 +22,14 @@ namespace KooliProjekt.Application.Features.ToDoLists
             var result = new OperationResult();
 
             var list = new Leaderboard();
-            if (request.Id == 0)
+            if (request.Id != 0)
             {
-                await _dbContext.Leaderboards.AddAsync(list);
-            }
-            else
-            {
-                list = await _dbContext.Leaderboards.FindAsync(request.Id);
-                //_dbContext.ToDoLists.Update(list);
+                list = await _leaderboardsRepository.GetByIdAsync(request.Id);
             }
 
             list.Id = request.Id;
 
-            await _dbContext.SaveChangesAsync();
+            await _leaderboardsRepository.SaveAsync(list);
 
             return result;
         }

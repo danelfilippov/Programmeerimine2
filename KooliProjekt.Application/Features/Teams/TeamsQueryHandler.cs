@@ -8,37 +8,25 @@ using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Teams
 {
-    public class SaveTeamsCommandHandler : IRequestHandler<SaveTeamsCommand, OperationResult>
+    public class TeamsQueryHandler : IRequestHandler<TeamsQuery, OperationResult<PagedResult<Team>>>
     {
         private readonly ApplicationDbContext _dbContext;
-
-        public SaveTeamsCommandHandler(ApplicationDbContext dbContext)
+        public TeamsQueryHandler(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult> Handle(SaveTeamsCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Team>>> Handle(TeamsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult();
-
-            var list = new Team();
-            if (request.Id == 0)
-            {
-                await _dbContext.Teams.AddAsync(list);
-            }
-            else
-            {
-                list = await _dbContext.Teams.FindAsync(request.Id);
-                //_dbContext.ToDoLists.Update(list);
-            }
-
-            list.Id = request.Id;
-
-            await _dbContext.SaveChangesAsync();
+            var result = new OperationResult<PagedResult<Team>>();
+            result.Value = await _dbContext
+                .Teams
+                .OrderBy(list => list.Id)
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }

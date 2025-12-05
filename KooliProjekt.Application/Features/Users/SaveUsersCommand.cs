@@ -2,7 +2,7 @@
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Users
 {
     public class SaveUsersCommand : IRequest<OperationResult>, ITransactional
     {

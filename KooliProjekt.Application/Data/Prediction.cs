@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Data
 {
-    public class Prediction
+    public class Prediction : Entity
     {
         [Required]
         [Unicode]

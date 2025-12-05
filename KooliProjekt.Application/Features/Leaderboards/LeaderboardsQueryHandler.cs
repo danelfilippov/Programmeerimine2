@@ -10,7 +10,7 @@ using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KooliProjekt.Application.Features.TodoLists
+namespace KooliProjekt.Application.Features.Leaderboards
 {
     public class LeaderboardsQueryHandler : IRequestHandler<LeaderboardsQuery, OperationResult<PagedResult<Leaderboard>>>
     {

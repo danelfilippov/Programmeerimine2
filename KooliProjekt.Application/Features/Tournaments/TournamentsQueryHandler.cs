@@ -10,7 +10,7 @@ using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KooliProjekt.Application.Features.TodoLists
+namespace KooliProjekt.Application.Features.Tournaments
 {
     public class TournamentsQueryHandler : IRequestHandler<TournamentsQuery, OperationResult<PagedResult<Tournament>>>
     {

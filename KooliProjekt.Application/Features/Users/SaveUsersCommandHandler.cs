@@ -1,44 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Users
 {
     public class SaveUsersCommandHandler : IRequestHandler<SaveUsersCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IUsersRepository _usersRepository;
 
-        public SaveUsersCommandHandler(ApplicationDbContext dbContext)
+        public SaveUsersCommandHandler(IUsersRepository usersRepository)
         {
-            _dbContext = dbContext;
+            _usersRepository = usersRepository;
         }
 
         public async Task<OperationResult> Handle(SaveUsersCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
 
-            var list = new User();
-            if (request.Id == 0)
+            var user = new User();
+            if (request.Id != 0)
             {
-                await _dbContext.Users.AddAsync(list);
-            }
-            else
-            {
-                list = await _dbContext.Users.FindAsync(request.Id);
-                //_dbContext.ToDoLists.Update(list);
+                user = await _usersRepository.GetByIdAsync(request.Id);
             }
 
-            list.Id = request.Id;
+            user.Id = request.Id;
 
-            await _dbContext.SaveChangesAsync();
+            await _usersRepository.SaveAsync(user);
 
             return result;
         }

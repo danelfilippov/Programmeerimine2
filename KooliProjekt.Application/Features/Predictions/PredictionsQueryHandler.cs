@@ -10,7 +10,7 @@ using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KooliProjekt.Application.Features.TodoLists
+namespace KooliProjekt.Application.Features.Predictions
 {
     public class PredictionsQueryHandler : IRequestHandler<PredictionsQuery, OperationResult<PagedResult<Prediction>>>
     {

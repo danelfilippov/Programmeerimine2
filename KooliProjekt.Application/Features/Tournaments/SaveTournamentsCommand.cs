@@ -2,7 +2,7 @@
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
-namespace KooliProjekt.Application.Features.ToDoLists
+namespace KooliProjekt.Application.Features.Tournaments
 {
     public class SaveTournamentsCommand : IRequest<OperationResult>, ITransactional
     {

@@ -4,7 +4,7 @@ using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
-namespace KooliProjekt.Application.Features.TodoLists
+namespace KooliProjekt.Application.Features.Predictions
 {
     public class PredictionsQuery : IRequest<OperationResult<PagedResult<Prediction>>>
     {

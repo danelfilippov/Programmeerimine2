@@ -4,7 +4,7 @@ using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
-namespace KooliProjekt.Application.Features.TodoLists
+namespace KooliProjekt.Application.Features.Tournaments
 {
     public class TournamentsQuery : IRequest<OperationResult<PagedResult<Tournament>>>
     {

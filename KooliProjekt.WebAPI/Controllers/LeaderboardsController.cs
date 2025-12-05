@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
-using KooliProjekt.Application.Features.TodoLists;
-using KooliProjekt.Application.Features.ToDoLists;
+using KooliProjekt.Application.Features.Leaderboards;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +37,15 @@ namespace KooliProjekt.WebAPI.Controllers
         [HttpPost]
         [Route("Save")]
         public async Task<IActionResult> Save(SaveLeaderboardsCommand command)
+        {
+            var response = await _mediator.Send(command);
+
+            return Result(response);
+        }
+
+        [HttpDelete]
+        [Route("Delete")]
+        public async Task<IActionResult> Delete(DeleteLeaderboardsCommand command)
         {
             var response = await _mediator.Send(command);
 
