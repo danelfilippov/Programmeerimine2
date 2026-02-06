@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
@@ -9,26 +8,30 @@ namespace KooliProjekt.Application.Features.Teams
 {
     public class SaveTeamsCommandHandler : IRequestHandler<SaveTeamsCommand, OperationResult>
     {
-        private readonly ITeamsRepository _teamsRepository;
+        private readonly ApplicationDbContext _dbContext;
 
-        public SaveTeamsCommandHandler(ITeamsRepository teamsRepository)
+        public SaveTeamsCommandHandler(ApplicationDbContext dbContext)
         {
-            _teamsRepository = teamsRepository;
+            _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveTeamsCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
 
-            var team = new Team();
-            if (request.Id != 0)
+            var list = new Team();
+            if(request.Id == 0)
             {
-                team = await _teamsRepository.GetByIdAsync(request.Id);
+                await _dbContext.Teams.AddAsync(list);
+            }
+            else
+            {
+                list = await _dbContext.Teams.FindAsync(request.Id);
             }
 
-            team.Id = request.Id;
+            list.Id = request.Id;
 
-            await _teamsRepository.SaveAsync(team);
+            await _dbContext.SaveChangesAsync();
 
             return result;
         }

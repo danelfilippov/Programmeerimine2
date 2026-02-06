@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Data
 {
-    public class Match : Entity
+    public class Match
     {
         [Required]
         [Unicode]

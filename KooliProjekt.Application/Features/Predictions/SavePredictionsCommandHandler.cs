@@ -1,8 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Data.Repositories;
-using KooliProjekt.Application.Features.Leaderboards;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
@@ -10,26 +8,30 @@ namespace KooliProjekt.Application.Features.Predictions
 {
     public class SavePredictionsCommandHandler : IRequestHandler<SavePredictionsCommand, OperationResult>
     {
-        private readonly IPredictionsRepository _predictionsRepository;
+        private readonly ApplicationDbContext _dbContext;
 
-        public SavePredictionsCommandHandler(IPredictionsRepository predictionsRepository)
+        public SavePredictionsCommandHandler(ApplicationDbContext dbContext)
         {
-            _predictionsRepository = predictionsRepository;
+            _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SavePredictionsCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
 
-            var prediction = new Prediction();
-            if (request.Id != 0)
+            var list = new Prediction();
+            if(request.Id == 0)
             {
-                prediction = await _predictionsRepository.GetByIdAsync(request.Id);
+                await _dbContext.Predictions.AddAsync(list);
+            }
+            else
+            {
+                list = await _dbContext.Predictions.FindAsync(request.Id);
             }
 
-            prediction.Id = request.Id;
+            list.Id = request.Id;
 
-            await _predictionsRepository.SaveAsync(prediction);
+            await _dbContext.SaveChangesAsync();
 
             return result;
         }

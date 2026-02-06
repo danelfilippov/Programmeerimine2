@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
@@ -9,26 +8,30 @@ namespace KooliProjekt.Application.Features.Users
 {
     public class SaveUsersCommandHandler : IRequestHandler<SaveUsersCommand, OperationResult>
     {
-        private readonly IUsersRepository _usersRepository;
+        private readonly ApplicationDbContext _dbContext;
 
-        public SaveUsersCommandHandler(IUsersRepository usersRepository)
+        public SaveUsersCommandHandler(ApplicationDbContext dbContext)
         {
-            _usersRepository = usersRepository;
+            _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveUsersCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
 
-            var user = new User();
-            if (request.Id != 0)
+            var list = new User();
+            if(request.Id == 0)
             {
-                user = await _usersRepository.GetByIdAsync(request.Id);
+                await _dbContext.Users.AddAsync(list);
+            }
+            else
+            {
+                list = await _dbContext.Users.FindAsync(request.Id);
             }
 
-            user.Id = request.Id;
+            list.Id = request.Id;
 
-            await _usersRepository.SaveAsync(user);
+            await _dbContext.SaveChangesAsync();
 
             return result;
         }

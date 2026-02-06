@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Data
 {
-    public class Leaderboard : Entity
+    public class Leaderboard
     {
         [Required]
         [Unicode]
