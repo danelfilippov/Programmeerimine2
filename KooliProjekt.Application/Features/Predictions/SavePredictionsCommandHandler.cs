@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Results;
@@ -12,24 +13,45 @@ namespace KooliProjekt.Application.Features.Predictions
 
         public SavePredictionsCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SavePredictionsCommand request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult();
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            var list = new Prediction();
+            var result = new OperationResult();
+            if(request.Id < 0)
+            {
+                result.AddPropertyError(nameof(request.Id), "Id cannot be negative");
+                return result;
+            }
+            
+            var prediction = new Prediction();
+
             if(request.Id == 0)
             {
-                await _dbContext.Predictions.AddAsync(list);
+                await _dbContext.Predictions.AddAsync(prediction);
             }
             else
             {
-                list = await _dbContext.Predictions.FindAsync(request.Id);
+                prediction = await _dbContext.Predictions.FindAsync(request.Id);
+                if (prediction == null)
+                {
+                    result.AddError("Cannot find prediction with id " + request.Id);
+                    return result;
+                }
             }
 
-            list.Id = request.Id;
+            prediction.Title = request.Title;
 
             await _dbContext.SaveChangesAsync();
 

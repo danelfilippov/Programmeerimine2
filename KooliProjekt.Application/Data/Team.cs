@@ -20,5 +20,7 @@ namespace KooliProjekt.Application.Data
         public string Name { get; set; }
         [MaxLength(100)]
         public string Country { get; set; }
+
+        public string Title { get; set; }
     }
 }

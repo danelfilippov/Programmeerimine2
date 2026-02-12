@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Results;
@@ -12,24 +13,45 @@ namespace KooliProjekt.Application.Features.Matchs
 
         public SaveMatchsCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveMatchsCommand request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult();
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            var list = new Match();
+            var result = new OperationResult();
+            if(request.Id < 0)
+            {
+                result.AddPropertyError(nameof(request.Id), "Id cannot be negative");
+                return result;
+            }
+            
+            var match = new Match();
+
             if(request.Id == 0)
             {
-                await _dbContext.Matchs.AddAsync(list);
+                await _dbContext.Matchs.AddAsync(match);
             }
             else
             {
-                list = await _dbContext.Matchs.FindAsync(request.Id);
+                match = await _dbContext.Matchs.FindAsync(request.Id);
+                if (match == null)
+                {
+                    result.AddError("Cannot find match with id " + request.Id);
+                    return result;
+                }
             }
 
-            list.Id = request.Id;
+            match.Title = request.Title;
 
             await _dbContext.SaveChangesAsync();
 

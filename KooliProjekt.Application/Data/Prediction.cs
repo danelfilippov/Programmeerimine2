@@ -24,5 +24,7 @@ namespace KooliProjekt.Application.Data
         public int Points { get; set; }
         [MaxLength(20)]
         public string Status { get; set; }
+
+        public string Title { get; set; }
     }
 }

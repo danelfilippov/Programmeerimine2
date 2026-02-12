@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Results;
@@ -12,24 +13,45 @@ namespace KooliProjekt.Application.Features.Users
 
         public SaveUsersCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveUsersCommand request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult();
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            var list = new User();
+            var result = new OperationResult();
+            if(request.Id < 0)
+            {
+                result.AddPropertyError(nameof(request.Id), "Id cannot be negative");
+                return result;
+            }
+            
+            var user = new User();
+
             if(request.Id == 0)
             {
-                await _dbContext.Users.AddAsync(list);
+                await _dbContext.Users.AddAsync(user);
             }
             else
             {
-                list = await _dbContext.Users.FindAsync(request.Id);
+                user = await _dbContext.Users.FindAsync(request.Id);
+                if (user == null)
+                {
+                    result.AddError("Cannot find user with id " + request.Id);
+                    return result;
+                }
             }
 
-            list.Id = request.Id;
+            user.Title = request.Title;
 
             await _dbContext.SaveChangesAsync();
 

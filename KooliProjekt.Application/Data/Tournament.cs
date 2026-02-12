@@ -25,5 +25,7 @@ namespace KooliProjekt.Application.Data
         public DateTime EndDate { get; set; }
         [MaxLength(1000)]
         public string Description { get; set; }
+
+        public string Title { get; set; }
     }
 }

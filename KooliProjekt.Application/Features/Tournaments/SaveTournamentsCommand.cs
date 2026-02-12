@@ -7,5 +7,6 @@ namespace KooliProjekt.Application.Features.Tournaments
     public class SaveTournamentsCommand : IRequest<OperationResult>, ITransactional
     {
         public int Id { get; set; }
+        public string Title { get; set; }
     }
 }

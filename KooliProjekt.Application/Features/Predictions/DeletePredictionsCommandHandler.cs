@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
@@ -17,17 +14,42 @@ namespace KooliProjekt.Application.Features.Predictions
 
         public DeletePredictionsCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(DeletePredictionsCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult();
 
-            await _dbContext
+            if (request.Id <= 0)
+            {
+                return result;
+            }
+
+            var prediction = await _dbContext
                 .Predictions
-                .Where(t => t.Id == request.Id)
-                .ExecuteDeleteAsync(cancellationToken);
+                .Include(t => t.Id)
+                .FirstOrDefaultAsync(t => t.Id == request.Id);
+            
+            if(prediction == null)
+            {
+                return result;
+            }
+
+            _dbContext.Predictions.RemoveRange(prediction);
+            _dbContext.Predictions.Remove(prediction);
+
+            await _dbContext.SaveChangesAsync();
 
             return result;
         }

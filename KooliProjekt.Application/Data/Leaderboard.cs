@@ -19,5 +19,7 @@ namespace KooliProjekt.Application.Data
         public int UserId { get; set; }
         [Required]
         public int TotalPoints { get; set; }
+
+        public string Title { get; set; }
     }
 }

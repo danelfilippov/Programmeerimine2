@@ -30,5 +30,6 @@ namespace KooliProjekt.Application.Data
         public string Description { get; set; }
         public int HomeScore { get; set; }
         public int GuestScore { get; set; }
+        public string Title { get; set; }
     }
 }

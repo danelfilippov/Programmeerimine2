@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
@@ -17,17 +14,42 @@ namespace KooliProjekt.Application.Features.Matchs
 
         public DeleteMatchsCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(DeleteMatchsCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult();
 
-            await _dbContext
+            if (request.Id <= 0)
+            {
+                return result;
+            }
+
+            var match = await _dbContext
                 .Matchs
-                .Where(t => t.Id == request.Id)
-                .ExecuteDeleteAsync(cancellationToken);
+                .Include(t => t.Id)
+                .FirstOrDefaultAsync(t => t.Id == request.Id);
+            
+            if(match == null)
+            {
+                return result;
+            }
+
+            _dbContext.Matchs.RemoveRange(match);
+            _dbContext.Matchs.Remove(match);
+
+            await _dbContext.SaveChangesAsync();
 
             return result;
         }

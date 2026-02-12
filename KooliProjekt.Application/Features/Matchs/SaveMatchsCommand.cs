@@ -8,5 +8,6 @@ namespace KooliProjekt.Application.Features.Matchs
     public class SaveMatchsCommand : IRequest<OperationResult>, ITransactional
     {
         public int Id { get; set; }
+        public string Title { get; set; }
     }
 }

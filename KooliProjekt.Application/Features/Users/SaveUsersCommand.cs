@@ -7,5 +7,6 @@ namespace KooliProjekt.Application.Features.Users
     public class SaveUsersCommand : IRequest<OperationResult>, ITransactional
     {
         public int Id { get; set; }
+        public string Title { get; set; }
     }
 }

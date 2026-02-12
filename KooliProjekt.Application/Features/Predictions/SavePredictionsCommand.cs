@@ -7,5 +7,6 @@ namespace KooliProjekt.Application.Features.Predictions
     public class SavePredictionsCommand : IRequest<OperationResult>, ITransactional
     {
         public int Id { get; set; }
+        public string Title { get; set; }
     }
 }

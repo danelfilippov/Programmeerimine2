@@ -8,5 +8,6 @@ namespace KooliProjekt.Application.Features.Teams
     public class SaveTeamsCommand : IRequest<OperationResult>, ITransactional
     {
         public int Id { get; set; }
+        public string Title { get; set; }
     }
 }

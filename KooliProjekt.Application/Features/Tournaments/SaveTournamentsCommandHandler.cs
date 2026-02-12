@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Results;
@@ -12,24 +13,45 @@ namespace KooliProjekt.Application.Features.Tournaments
 
         public SaveTournamentsCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveTournamentsCommand request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult();
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            var list = new Tournament();
+            var result = new OperationResult();
+            if(request.Id < 0)
+            {
+                result.AddPropertyError(nameof(request.Id), "Id cannot be negative");
+                return result;
+            }
+            
+            var tournament = new Tournament();
+
             if(request.Id == 0)
             {
-                await _dbContext.tournaments.AddAsync(list);
+                await _dbContext.tournaments.AddAsync(tournament);
             }
             else
             {
-                list = await _dbContext.tournaments.FindAsync(request.Id);
+                tournament = await _dbContext.tournaments.FindAsync(request.Id);
+                if (tournament == null)
+                {
+                    result.AddError("Cannot find tournament with id " + request.Id);
+                    return result;
+                }
             }
 
-            list.Id = request.Id;
+            tournament.Title = request.Title;
 
             await _dbContext.SaveChangesAsync();
 

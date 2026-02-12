@@ -28,5 +28,7 @@ namespace KooliProjekt.Application.Data
         public string Role { get; set; }
         [MaxLength(15)]
         public string Phone { get; set; }
+
+        public string Title { get; set; }
     }
 }
