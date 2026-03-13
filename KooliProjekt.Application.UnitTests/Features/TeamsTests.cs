@@ -364,5 +364,37 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.True(result.HasErrors);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567890123456789012345678901234567890123456789000")]
+        public void SaveValidator_should_return_false_when_title_is_invalid(string title)
+        {
+            // Arrange
+            var validator = new SaveTeamsCommandValidator(DbContext);
+            var command = new SaveTeamsCommand { Id = 0, Title = title };
+
+            // Act
+            var result = validator.Validate(command);
+
+            // Assert
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveTeamsCommand.Title), result.Errors.First().PropertyName);
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_title_is_valid()
+        {
+            // Arrange
+            var validator = new SaveTeamsCommandValidator(DbContext);
+            var command = new SaveTeamsCommand { Id = 0, Title = "Team 1" };
+
+            // Act
+            var result = validator.Validate(command);
+
+            // Assert
+            Assert.True(result.IsValid);
+        }
     }
 }

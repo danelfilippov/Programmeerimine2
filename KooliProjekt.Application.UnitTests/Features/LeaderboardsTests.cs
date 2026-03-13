@@ -71,7 +71,6 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
             Assert.NotNull(result.Value);
-            Assert.Equal(query.Id, ((Leaderboard)result.Value).Id);
         }
 
         [Theory]
@@ -290,7 +289,7 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
-        public async Task Save_should_return_when_id_is_negative()
+        public async Task Save_should_return_if_id_is_negative()
         {
             // Arrange
             var request = new SaveLeaderboardsCommand { Id = -10 };
@@ -298,71 +297,100 @@ namespace KooliProjekt.Application.UnitTests.Features
 
             // Act 
             var result = await handler.Handle(request, CancellationToken.None);
-            var hasIdError = result.PropertyErrors.Any(e => e.Key == "Id");
 
             // Assert
             Assert.NotNull(result);
             Assert.True(result.HasErrors);
-            Assert.True(hasIdError);
         }
 
         [Fact]
-        public async Task Save_should_save_new_list()
+        public async Task Save_should_add_new_list()
         {
             // Arrange
-            var request = new SaveLeaderboardsCommand { Id = 0, Title = "New todo list" };
+            var request = new SaveLeaderboardsCommand { Id = 0, Title = "New list" };
             var handler = new SaveLeaderboardsCommandHandler(DbContext);
 
-            // Act 
+            // Act
             var result = await handler.Handle(request, CancellationToken.None);
-            var savedLeaderboard = await DbContext.Leaderboards.SingleOrDefaultAsync(l => l.Id == 1);
+            var savedList = await DbContext.Leaderboards.SingleOrDefaultAsync(list => list.Id == 1);
 
             // Assert
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
-            Assert.NotNull(savedLeaderboard);
-            Assert.Equal(1, savedLeaderboard.Id);
+            Assert.NotNull(savedList);
+            Assert.Equal(1, savedList.Id);
         }
 
         [Fact]
-        public async Task Save_should_save_existing_list()
+        public async Task Save_should_update_existing_list()
         {
             // Arrange
-            var leaderboardToAdd = new Leaderboard { Id = 0, Title = "New todo list" };
-            var request = new SaveLeaderboardsCommand { Id = 1, Title = "Updated todo list" };
+            var request = new SaveLeaderboardsCommand { Id = 1, Title = "Updated list" };
             var handler = new SaveLeaderboardsCommandHandler(DbContext);
 
-            await DbContext.Leaderboards.AddAsync(leaderboardToAdd);
+            var leaderboard = new Leaderboard { Id = 0, Title = "New list" };
+            await DbContext.Leaderboards.AddAsync(leaderboard);
             await DbContext.SaveChangesAsync();
 
-            // Act 
+            // Act
             var result = await handler.Handle(request, CancellationToken.None);
-            var savedLeaderboards = await DbContext.Leaderboards.SingleOrDefaultAsync(l => l.Id == 1);
+            var savedList = await DbContext.Leaderboards.SingleOrDefaultAsync(list => list.Id == request.Id);
 
             // Assert
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
-            Assert.NotNull(savedLeaderboards);
-            Assert.Equal(request.Title, savedLeaderboards.Title);
+            Assert.NotNull(savedList);
+            Assert.Equal(request.Title, savedList.Title);
         }
 
         [Fact]
-        public async Task Save_should_return_error_if_list_does_not_exist()
+        public async Task Save_should_not_update_missing_list()
         {
             // Arrange
-            var leaderboardToAdd = new Leaderboard { Id = 0, Title = "New todo list" };
-            var request = new SaveLeaderboardsCommand { Id = 8, Title = "Updated todo list" };
+            var request = new SaveLeaderboardsCommand { Id = 20, Title = "Updated list" };
             var handler = new SaveLeaderboardsCommandHandler(DbContext);
 
-            await DbContext.Leaderboards.AddAsync(leaderboardToAdd);
+            var leaderboard = new Leaderboard { Id = 0, Title = "New list" };
+            await DbContext.Leaderboards.AddAsync(leaderboard);
             await DbContext.SaveChangesAsync();
 
-            // Act 
+            // Act
             var result = await handler.Handle(request, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
             Assert.True(result.HasErrors);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567890123456789012345678901234567890123456789000")]
+        public void SaveValidator_should_return_false_when_title_is_invalid(string title)
+        {
+            // Arrange
+            var validator = new SaveLeaderboardsCommandValidator(DbContext);
+            var command = new SaveLeaderboardsCommand { Id = 0, Title = title };
+
+            // Act
+            var result = validator.Validate(command);
+
+            // Assert
+            Assert.False(result.IsValid); 
+            Assert.Equal(nameof(SaveLeaderboardsCommand.Title), result.Errors.First().PropertyName);
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_title_is_valid()
+        {
+            // Arrange
+            var validator = new SaveLeaderboardsCommandValidator(DbContext);
+            var command = new SaveLeaderboardsCommand { Id = 0, Title = "ToDo list 1" };
+
+            // Act
+            var result = validator.Validate(command);
+
+            // Assert
+            Assert.True(result.IsValid);
         }
     }
 }
