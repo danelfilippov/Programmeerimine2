@@ -32,7 +32,8 @@ namespace KooliProjekt.Application.Data
                     Email = "user" + (i + 1) + "@example.com",
                     Password = "password" + (i + 1),
                     Role = i % 2 == 0 ? "Admin" : "User",
-                    Phone = "555000" + i
+                    Phone = "555000" + i,
+                    Title = "Title " + (i + 1)
                 };
                 users.Add(user);
                 _dbContext.Users.Add(user);

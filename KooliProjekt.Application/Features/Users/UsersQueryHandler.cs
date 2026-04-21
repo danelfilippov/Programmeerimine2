@@ -26,6 +26,7 @@ namespace KooliProjekt.Application.Features.Users
             result.Value = await _dbContext
                 .Users
                 .OrderBy(list => list.Id)
+                .OrderBy(list => list.Title)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

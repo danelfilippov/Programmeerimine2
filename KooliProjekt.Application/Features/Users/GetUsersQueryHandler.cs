@@ -24,11 +24,10 @@ namespace KooliProjekt.Application.Features.Users
 
             result.Value = await _dbContext
                 .Users
-                .Include(list => list.Id)
-                .Where(list => list.Id == request.Id)
                 .Select(list => new
                 {
                     Id = list.Id,
+                    Title = list.Title,
                 })
                 .FirstOrDefaultAsync();
 
