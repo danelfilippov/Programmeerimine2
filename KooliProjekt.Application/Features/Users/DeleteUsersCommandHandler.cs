@@ -38,7 +38,6 @@ namespace KooliProjekt.Application.Features.Users
 
             var user = await _dbContext
                 .Users
-                .Include(t => t.Id)
                 .FirstOrDefaultAsync(t => t.Id == request.Id);
             
             if(user == null)
@@ -46,7 +45,6 @@ namespace KooliProjekt.Application.Features.Users
                 return result;
             }
 
-            _dbContext.Users.RemoveRange(user);
             _dbContext.Users.Remove(user);
 
             await _dbContext.SaveChangesAsync();

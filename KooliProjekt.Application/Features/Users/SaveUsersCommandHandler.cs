@@ -34,11 +34,17 @@ namespace KooliProjekt.Application.Features.Users
                 result.AddPropertyError(nameof(request.Id), "Id cannot be negative");
                 return result;
             }
-            
-            var user = new User();
+
+            User user;
 
             if(request.Id == 0)
             {
+                user = new User();
+                user.Title = request.Title;
+                user.Name = request.Title;
+                user.Email = "default@example.com";
+                user.Password = "defaultPassword123";
+                user.Role = "User";
                 await _dbContext.Users.AddAsync(user);
             }
             else
@@ -49,13 +55,13 @@ namespace KooliProjekt.Application.Features.Users
                     result.AddError("Cannot find user with id " + request.Id);
                     return result;
                 }
+                user.Title = request.Title;
             }
-
-            user.Title = request.Title;
 
             await _dbContext.SaveChangesAsync();
 
             return result;
         }
+        
     }
 }
