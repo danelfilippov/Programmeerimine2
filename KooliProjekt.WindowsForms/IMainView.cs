@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KooliProjekt.WindowsForms
+﻿namespace KooliProjekt.WindowsForms
 {
     public interface IMainView
     {
@@ -12,5 +8,6 @@ namespace KooliProjekt.WindowsForms
         void ShowError(string message, OperationResult result);
         int CurrentId { get; set; }
         string CurrentTitle { get; set; }
+        bool ConfirmDelete();
     }
 }

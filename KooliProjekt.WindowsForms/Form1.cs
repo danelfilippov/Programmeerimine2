@@ -1,6 +1,4 @@
-using System.Collections;
 using System.ComponentModel;
-using System.Net.Http.Json;
 using KooliProjekt.WindowsForms.Api;
 
 namespace KooliProjekt.WindowsForms
@@ -53,42 +51,24 @@ namespace KooliProjekt.WindowsForms
 
         private async void DeleteCommand_Click(object sender, EventArgs e)
         {
-            var message = "Oled kindel, et soovid kustutada " + titleField.Text + "?";
-            var answer = MessageBox.Show(message, "Kustutamine", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (answer != DialogResult.Yes)
-            {
-                return;
-            }
-
-            var id = int.Parse(idField.Text);
-            var result = await _apiClient.Delete(id);
-            if (result.HasErrors)
-            {
-                ShowError("Viga kustutamisel", result);
-            }
-
-            await _mainViewPresenter.LoadData();
+            await _mainViewPresenter.Delete();
         }
 
         private void AddCommand_Click(object sender, EventArgs e)
         {
-            idField.Text = "0";
-            titleField.Text = "";
+            _mainViewPresenter.SetSelection(null);
         }
 
         private async void SaveCommand_Click(object sender, EventArgs e)
         {
-            var user = new User();
-            user.Id = int.Parse(idField.Text);
-            user.Title = titleField.Text;
+            await _mainViewPresenter.Save();
+        }
 
-            var result = await _apiClient.Save(user);
-            if (result.HasErrors)
-            {
-                ShowError("Viga salvestamisel", result);
-            }
-
-            await _mainViewPresenter.LoadData();
+        public bool ConfirmDelete()
+        {
+            var message = "Oled kindel, et soovid kustutada " + titleField.Text + "?";
+            var answer = MessageBox.Show(message, "Kustutamine", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            return (answer == DialogResult.Yes);
         }
 
         // Koosta etteantud veateatest ja OperationResult sees olevatest vigadest
