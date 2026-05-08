@@ -16,7 +16,11 @@ namespace KooliProjekt.WindowsForms
             ApplicationConfiguration.Initialize();
 
             IApiClient apiClient = new ApiClient();
-            System.Windows.Forms.Application.Run(new Form1(apiClient));
+
+            var view = new Form1(apiClient);
+            var presenter = new MainViewPresenter(apiClient, view);
+
+            System.Windows.Forms.Application.Run(view);
         }
     }
 }

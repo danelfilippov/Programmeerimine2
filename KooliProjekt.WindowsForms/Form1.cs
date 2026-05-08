@@ -1,12 +1,43 @@
 using System.Collections;
+using System.ComponentModel;
 using System.Net.Http.Json;
 using KooliProjekt.WindowsForms.Api;
 
 namespace KooliProjekt.WindowsForms
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IMainView
     {
         private readonly IApiClient _apiClient;
+        private MainViewPresenter _mainViewPresenter;
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IList<User> DataSource
+        {
+            get { return (IList<User>)dataGridView1.DataSource; }
+            set { dataGridView1.DataSource = value; }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public User SelectedItem { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int CurrentId
+        {
+            get { return int.Parse(idField.Text); }
+            set { idField.Text = value.ToString(); }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CurrentTitle
+        {
+            get { return titleField.Text; }
+            set { titleField.Text = value; }
+        }
+
+        public void SetPresenter(MainViewPresenter presenter)
+        {
+            _mainViewPresenter = presenter;
+        }
 
         public Form1(IApiClient apiClient)
         {
@@ -36,7 +67,7 @@ namespace KooliProjekt.WindowsForms
                 ShowError("Viga kustutamisel", result);
             }
 
-            await LoadTodoLists();
+            await _mainViewPresenter.LoadData();
         }
 
         private void AddCommand_Click(object sender, EventArgs e)
@@ -47,21 +78,22 @@ namespace KooliProjekt.WindowsForms
 
         private async void SaveCommand_Click(object sender, EventArgs e)
         {
-            var todoList = new User();
-            todoList.Id = int.Parse(idField.Text);
-            todoList.Title = titleField.Text;
+            var user = new User();
+            user.Id = int.Parse(idField.Text);
+            user.Title = titleField.Text;
 
-            var result = await _apiClient.Save(todoList);
+            var result = await _apiClient.Save(user);
             if (result.HasErrors)
             {
                 ShowError("Viga salvestamisel", result);
             }
-            await LoadTodoLists();
+
+            await _mainViewPresenter.LoadData();
         }
 
         // Koosta etteantud veateatest ja OperationResult sees olevatest vigadest
         // veateade ja näita seda kasutajale
-        private void ShowError(string message, OperationResult result)
+        public void ShowError(string message, OperationResult result)
         {
             var error = message + "\r\n";
             var apiErrors = "";
@@ -102,35 +134,17 @@ namespace KooliProjekt.WindowsForms
         {
             if (dataGridView1.CurrentRow == null)
             {
+                _mainViewPresenter.SetSelection(null);
                 return;
             }
 
             var selectedList = (User)dataGridView1.CurrentRow.DataBoundItem;
-            if (selectedList == null)
-            {
-                return;
-            }
-
-            idField.Text = selectedList.Id.ToString();
-            titleField.Text = selectedList.Title ?? "";
+            _mainViewPresenter.SetSelection(selectedList);
         }
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            await LoadTodoLists();
-        }
-
-        private async Task LoadTodoLists()
-        {
-            var response = await _apiClient.List(1, 100);
-            if (response.HasErrors)
-            {
-                ShowError("Viga andmete laadimisel", response);
-                dataGridView1.DataSource = null;
-                return;
-            }
-
-            dataGridView1.DataSource = response.Value.Results;
+            await _mainViewPresenter.LoadData();
         }
     }
 }
