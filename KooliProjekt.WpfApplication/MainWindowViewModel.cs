@@ -1,26 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.ObjectModel;
 
 namespace KooliProjekt.WpfApplication
 {
-    public class MainWindowViewModel
+    public class MainWindowViewModel : NotifyPropertyChangedBase
     {
-        public IList<User> Data 
-        { 
-            get
-            {
-                var items = new List<User>
-                {
-                    new User { Id = 1, Title = "Test 1" },
-                    new User { Id = 2, Title = "Test 2" },
-                    new User{ Id = 3, Title = "Test 3" }
-                };
+        private readonly IApiClient _apiClient;
+        private readonly ObservableCollection<User> _data;
 
-                return items;
+        private User _selectedItem;
+
+        public MainWindowViewModel() : this(new ApiClient())
+        {
+
+        }
+
+        public MainWindowViewModel(IApiClient apiClient)
+        {
+            _data = new ObservableCollection<User>();
+            _apiClient = apiClient;
+        }
+
+        public async Task LoadDataAsync()
+        {
+            try
+            {
+                var data = await _apiClient.List(1, 100);
+
+                if (data.HasErrors || data.Value == null || data.Value.Results == null)
+                {
+                    return;
+                }
+
+                _data.Clear();
+                foreach (var item in data.Value.Results)
+                {
+                    _data.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
             }
         }
 
-        public object SelectedItem { get; set; }
+        public ObservableCollection<User> Data
+        {
+            get
+            {
+                return _data;
+            }
+        }
+
+        public User SelectedItem
+        {
+            get
+            {
+                return _selectedItem;
+            }
+            set
+            {
+                _selectedItem = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 }

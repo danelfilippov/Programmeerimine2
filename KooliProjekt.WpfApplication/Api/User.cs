@@ -1,8 +1,34 @@
 ﻿namespace KooliProjekt.WpfApplication
 {
-    public class User   
+    public class User : NotifyPropertyChangedBase
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
+        private int _id;
+        private string _title;
+
+        public int Id
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                _id = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public string Title
+        {
+            get
+            {
+                return _title;
+            }
+            set
+            {
+                _title = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 }

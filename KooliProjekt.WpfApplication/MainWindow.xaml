@@ -12,9 +12,10 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         
-        <DataGrid x:Name="ToDoListsDataGrid" 
+        <DataGrid x:Name="UserDataGrid" 
                   Grid.Column="0"
                   AutoGenerateColumns="True"
+                  CanUserAddRows="False"
                   ItemsSource="{Binding Data}"
                   SelectedItem="{Binding SelectedItem}"/>
 
