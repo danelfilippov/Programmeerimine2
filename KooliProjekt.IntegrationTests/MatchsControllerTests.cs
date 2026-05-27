@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
@@ -31,14 +32,22 @@ namespace KooliProjekt.IntegrationTests
         {
             // Arrange
             var url = "/api/Matchs/Get/?id=1";
-            
-            var match = new Match { Title = "Test List" };
+
+            var match = new Match 
+            { 
+                TournamentId = 1,
+                HomeTeamId = 1,
+                GuestTeamId = 2,
+                StartTime = DateTime.Now,
+                Status = "scheduled",
+                Title = "Test Match"
+            };
             await DbContext.AddAsync(match);
             await DbContext.SaveChangesAsync();
 
             // Act
             var response = await Client.GetFromJsonAsync<OperationResult<Match>>(url);
-            
+
             // Assert
             Assert.NotNull(response);
             Assert.False(response.HasErrors);

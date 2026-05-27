@@ -31,14 +31,21 @@ namespace KooliProjekt.IntegrationTests
         {
             // Arrange
             var url = "/api/Predictions/Get/?id=1";
-            
-            var prediction = new Prediction { Title = "Test List" };
+
+            var prediction = new Prediction 
+            { 
+                UserId = 1,
+                MatchId = 1,
+                HomeGoals = 2,
+                GuestGoals = 1,
+                Title = "Test Prediction"
+            };
             await DbContext.AddAsync(prediction);
             await DbContext.SaveChangesAsync();
 
             // Act
             var response = await Client.GetFromJsonAsync<OperationResult<Prediction>>(url);
-            
+
             // Assert
             Assert.NotNull(response);
             Assert.False(response.HasErrors);

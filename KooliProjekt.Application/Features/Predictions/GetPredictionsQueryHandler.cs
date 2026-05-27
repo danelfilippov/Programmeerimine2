@@ -24,11 +24,11 @@ namespace KooliProjekt.Application.Features.Predictions
 
             result.Value = await _dbContext
                 .Predictions
-                .Include(List => List.Id)
                 .Where(List => List.Id == request.Id)
                 .Select(List => new
                 {
                     Id = List.Id,
+                    Title = List.Title,
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 

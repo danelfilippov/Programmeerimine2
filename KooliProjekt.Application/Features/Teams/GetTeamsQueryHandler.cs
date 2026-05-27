@@ -24,11 +24,11 @@ namespace KooliProjekt.Application.Features.Teams
 
             result.Value = await _dbContext
                 .Teams
-                .Include(list => list.Id)
                 .Where(list => list.Id == request.Id)
                 .Select(list => new
                 {
                     Id = list.Id,
+                    Title = list.Title,
                 })
                 .FirstOrDefaultAsync();
 

@@ -31,14 +31,19 @@ namespace KooliProjekt.IntegrationTests
         {
             // Arrange
             var url = "/api/Teams/Get/?id=1";
-            
-            var team = new Team { Title = "Test List" };
+
+            var team = new Team 
+            { 
+                Name = "Test Team",
+                Country = "Estonia",
+                Title = "Test Title"
+            };
             await DbContext.AddAsync(team);
             await DbContext.SaveChangesAsync();
 
             // Act
             var response = await Client.GetFromJsonAsync<OperationResult<Team>>(url);
-            
+
             // Assert
             Assert.NotNull(response);
             Assert.False(response.HasErrors);

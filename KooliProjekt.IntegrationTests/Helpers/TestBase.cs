@@ -41,6 +41,5 @@ namespace KooliProjekt.IntegrationTests.Helpers
             dbContext.Database.EnsureDeleted();
         }
 
-        // Add your other helper methods here
     }
 }

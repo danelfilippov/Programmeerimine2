@@ -31,14 +31,20 @@ namespace KooliProjekt.IntegrationTests
         {
             // Arrange
             var url = "/api/Leaderboards/Get/?id=1";
-            
-            var leaderboard = new Leaderboard { Title = "Test List" };
+
+            var leaderboard = new Leaderboard 
+            { 
+                TournamentId = 1,
+                UserId = 1,
+                TotalPoints = 100,
+                Title = "Test Leaderboard"
+            };
             await DbContext.AddAsync(leaderboard);
             await DbContext.SaveChangesAsync();
 
             // Act
             var response = await Client.GetFromJsonAsync<OperationResult<Leaderboard>>(url);
-            
+
             // Assert
             Assert.NotNull(response);
             Assert.False(response.HasErrors);

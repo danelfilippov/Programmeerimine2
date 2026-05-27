@@ -31,14 +31,21 @@ namespace KooliProjekt.IntegrationTests
         {
             // Arrange
             var url = "/api/Users/Get/?id=1";
-            
-            var user = new User { Title = "Test List" };
+
+            var user = new User 
+            { 
+                Name = "Test User",
+                Email = "test@example.com",
+                Password = "password",
+                Role = "admin",
+                Title = "Test Title"
+            };
             await DbContext.AddAsync(user);
             await DbContext.SaveChangesAsync();
 
             // Act
             var response = await Client.GetFromJsonAsync<OperationResult<User>>(url);
-            
+
             // Assert
             Assert.NotNull(response);
             Assert.False(response.HasErrors);

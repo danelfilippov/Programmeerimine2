@@ -24,6 +24,7 @@ namespace KooliProjekt.Application.Features.Users
 
             result.Value = await _dbContext
                 .Users
+                .Where(user => user.Id == request.Id)
                 .Select(list => new
                 {
                     Id = list.Id,

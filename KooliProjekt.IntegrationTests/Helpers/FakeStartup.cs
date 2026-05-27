@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Serialization;
 
 
 namespace KooliProjekt.IntegrationTests.Helpers
@@ -42,7 +43,12 @@ namespace KooliProjekt.IntegrationTests.Helpers
             });
 
             services.AddControllersWithViews()
-                    .AddApplicationPart(typeof(ApiControllerBase).Assembly);
+                    .AddApplicationPart(typeof(ApiControllerBase).Assembly)
+                    .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+                        options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                    });
 
         }
 

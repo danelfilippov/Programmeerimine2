@@ -24,12 +24,11 @@ namespace KooliProjekt.Application.Features.Leaderboards
 
             result.Value = await _dbContext
                 .Leaderboards
-                .Include(list => list.UserId)
                 .Where(list => list.Id == request.Id)
                 .Select(list => new
                 {
                     Id = list.Id,
-                    UserId = list.UserId,
+                    Title = list.Title,
                 })
                 .FirstOrDefaultAsync();
 
