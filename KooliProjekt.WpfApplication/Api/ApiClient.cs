@@ -11,7 +11,7 @@ namespace KooliProjekt.WpfApplication
 
         public ApiClient()
         {
-            _baseUrl = "http://localhost:5086/api/TodoLists/";
+            _baseUrl = "http://localhost:5086/api/Users/";
             _client = new HttpClient();
         }
 
@@ -23,6 +23,11 @@ namespace KooliProjekt.WpfApplication
             var body = await response.Content.ReadAsStringAsync();
 
             var result = JsonConvert.DeserializeObject<OperationResult<PagedResult<User>>>(body);
+            if (result == null)
+            {
+                result = new OperationResult<PagedResult<User>>();
+                result.AddError($"Failed to deserialize response. Response body: {body}");
+            }
             return result;
         }
 
@@ -38,21 +43,28 @@ namespace KooliProjekt.WpfApplication
             var body = await response.Content.ReadAsStringAsync();
 
             var result = JsonConvert.DeserializeObject<OperationResult>(body);
+            if (result == null)
+            {
+                result = new OperationResult();
+                result.AddError($"Failed to deserialize response. Response body: {body}");
+            }
             return result;
         }
 
         public async Task<OperationResult> Delete(int id)
         {
-            var url = _baseUrl + "Delete";
+            var url = _baseUrl + "Delete?id=" + id;
 
-            using var request = new HttpRequestMessage(HttpMethod.Delete, url)
-            {
-                Content = JsonContent.Create(new { id = id })
-            };
+            using var request = new HttpRequestMessage(HttpMethod.Delete, url);
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
 
             var result = JsonConvert.DeserializeObject<OperationResult>(body);
+            if (result == null)
+            {
+                result = new OperationResult();
+                result.AddError($"Failed to deserialize response. Response body: {body}");
+            }
             return result;
         }
     }
