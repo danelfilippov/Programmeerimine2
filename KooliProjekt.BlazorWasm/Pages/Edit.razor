@@ -1,0 +1,71 @@
+﻿@page "/create"
+@page "/edit/{Id:int}"
+
+@inject KooliProjekt.BlazorWasm.IApiClient apiClient
+@inject NavigationManager NavManager
+
+<h3>@title</h3>
+
+<EditForm EditContext="editContext" OnValidSubmit="@FormSubmitted">
+    <p class="alert-danger">@error</p>
+    <div class="form-group row">
+        <label class="col-ms-2 col-form-label">ID</label>
+        <div class="col-sm-10">
+            @user.Id
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-ms-2 col-form-label">Title</label>
+        <div class="col-sm-10">
+            <InputText class="form-control" @bind-Value="user.Title" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-ms-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private string error = "";
+    private string title = "Edit";
+    private EditContext? editContext;
+    private User user = new User();
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new EditContext(user);
+
+        if(Id == 0)
+        {
+            title = "Add";            
+            return;
+        }        
+
+        var response = await apiClient.Get(Id);
+        if(!response.HasErrors)
+        {
+            user = response.Value;
+            editContext = new EditContext(user);
+        }
+    }
+
+    private async Task FormSubmitted()
+    {
+        error = "";
+        var result = await apiClient.Save(user);
+        if (!result.HasErrors)
+        {
+            NavManager.NavigateTo("/lists");
+            return;
+        }
+
+        error = "Viga andmete salvestamisel!";
+    }
+}

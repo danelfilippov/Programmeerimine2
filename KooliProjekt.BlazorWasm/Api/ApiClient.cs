@@ -25,6 +25,17 @@ namespace KooliProjekt.BlazorWasm
             return result;
         }
 
+        public async Task<OperationResult<User>> Get(int id)
+        {
+            var url = _baseUrl + "Get?id=" + id;
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            using var response = await _client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            var result = JsonConvert.DeserializeObject<OperationResult<User>>(body);
+            return result;
+        }
+
         public async Task<OperationResult> Save(User list)
         {
             var url = _baseUrl + "Save";
