@@ -14,6 +14,9 @@ namespace KooliProjekt.WindowsForms.UnitTests
         {
             _apiClientMock = new Mock<IApiClient>();
             _mainViewMock = new Mock<IMainView>();
+            _mainViewMock
+                .Setup(view => view.SetPresenter(It.IsAny<MainViewPresenter>()))
+                .Verifiable();
             _presenter = new MainViewPresenter(_apiClientMock.Object, _mainViewMock.Object);
         }
 
@@ -22,7 +25,7 @@ namespace KooliProjekt.WindowsForms.UnitTests
         {
             // Arrange
             var faultyResponse = new OperationResult<PagedResult<User>>();
-            faultyResponse.Errors.Add("An error occurred while fetching data.");
+            faultyResponse.AddError("An error occurred while fetching data.");
 
             _apiClientMock
                 .Setup(client => client.List(It.IsAny<int>(), It.IsAny<int>()))
@@ -112,7 +115,7 @@ namespace KooliProjekt.WindowsForms.UnitTests
         {
             // Arrange
             var faultyResponse = new OperationResult();
-            faultyResponse.Errors.Add("An error occurred while saving data.");
+            faultyResponse.AddError("An error occurred while saving data.");
 
             _apiClientMock
                 .Setup(client => client.Save(It.IsAny<User>()))
@@ -191,7 +194,7 @@ namespace KooliProjekt.WindowsForms.UnitTests
         {
             // Arrange
             var faultyResponse = new OperationResult();
-            faultyResponse.Errors.Add("An error occurred while deleting data.");
+            faultyResponse.AddError("An error occurred while deleting data.");
 
             _mainViewMock
                 .Setup(view => view.ConfirmDelete())
