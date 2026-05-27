@@ -35,5 +35,10 @@ namespace KooliProjekt.WpfApplication
         {
             await _execute((T)parameter);
         }
+
+        public async Task ExecuteAsync(T parameter)
+        {
+            await _execute(parameter);
+        }
     }
 }
