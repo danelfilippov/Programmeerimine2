@@ -23,8 +23,17 @@ namespace KooliProjekt.Application.Features.Predictions
         public async Task<OperationResult<PagedResult<Prediction>>> Handle(PredictionsQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<Prediction>>();
-            result.Value = await _dbContext
-                .Predictions
+
+            IQueryable<Prediction> query = _dbContext.Predictions;
+
+            // Apply search filter if Title is provided
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var searchTerm = request.Title.ToLower();
+                query = query.Where(p => p.Title.ToLower().Contains(searchTerm) || p.Status.ToLower().Contains(searchTerm));
+            }
+
+            result.Value = await query
                 .OrderBy(list => list.Id)
                 .GetPagedAsync(request.Page, request.PageSize);
 

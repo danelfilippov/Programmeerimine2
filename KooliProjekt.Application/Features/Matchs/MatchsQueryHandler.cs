@@ -23,9 +23,18 @@ namespace KooliProjekt.Application.Features.Matchs
         public async Task<OperationResult<PagedResult<Match>>> Handle(MatchsQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<Match>>();
-            result.Value = await _dbContext
-                .Matchs
-                .OrderBy(list => list.Id)
+
+            IQueryable<Match> query = _dbContext.Matchs;
+
+            // Apply search filter if Title is provided
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var searchTerm = request.Title.ToLower();
+                query = query.Where(m => m.Title.ToLower().Contains(searchTerm) || m.Description.ToLower().Contains(searchTerm));
+            }
+
+            result.Value = await query
+                .OrderBy(list => list.StartTime)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

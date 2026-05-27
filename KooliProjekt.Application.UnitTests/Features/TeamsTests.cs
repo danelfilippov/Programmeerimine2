@@ -396,5 +396,128 @@ namespace KooliProjekt.Application.UnitTests.Features
             // Assert
             Assert.True(result.IsValid);
         }
+
+        [Fact]
+        public async Task List_should_filter_teams_by_title_search()
+        {
+            // Arrange
+            var handler = new TeamsQueryHandler(DbContext);
+            var team1 = new Team { Title = "Manchester United", Name = "Manchester United", Country = "England" };
+            var team2 = new Team { Title = "Liverpool FC", Name = "Liverpool FC", Country = "England" };
+            var team3 = new Team { Title = "Barcelona", Name = "Barcelona", Country = "Spain" };
+
+            await DbContext.Teams.AddAsync(team1);
+            await DbContext.Teams.AddAsync(team2);
+            await DbContext.Teams.AddAsync(team3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TeamsQuery { Page = 1, PageSize = 10, Title = "Manchester" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Manchester United", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_filter_teams_by_name_search()
+        {
+            // Arrange
+            var handler = new TeamsQueryHandler(DbContext);
+            var team1 = new Team { Title = "Title 1", Name = "Arsenal", Country = "England" };
+            var team2 = new Team { Title = "Title 2", Name = "Chelsea", Country = "England" };
+            var team3 = new Team { Title = "Title 3", Name = "Real Madrid", Country = "Spain" };
+
+            await DbContext.Teams.AddAsync(team1);
+            await DbContext.Teams.AddAsync(team2);
+            await DbContext.Teams.AddAsync(team3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TeamsQuery { Page = 1, PageSize = 10, Title = "Chelsea" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Chelsea", result.Value.Results.First().Name);
+        }
+
+        [Fact]
+        public async Task List_should_return_all_teams_when_title_is_empty()
+        {
+            // Arrange
+            var handler = new TeamsQueryHandler(DbContext);
+            var team1 = new Team { Title = "Team 1", Name = "Team A", Country = "England" };
+            var team2 = new Team { Title = "Team 2", Name = "Team B", Country = "Spain" };
+
+            await DbContext.Teams.AddAsync(team1);
+            await DbContext.Teams.AddAsync(team2);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TeamsQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Results.Count);
+        }
+
+        [Fact]
+        public async Task List_should_be_case_insensitive_for_search()
+        {
+            // Arrange
+            var handler = new TeamsQueryHandler(DbContext);
+            var team = new Team { Title = "Premier League Team", Name = "Manchester City", Country = "England" };
+
+            await DbContext.Teams.AddAsync(team);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TeamsQuery { Page = 1, PageSize = 10, Title = "premier" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Premier League Team", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_empty_when_no_match_found()
+        {
+            // Arrange
+            var handler = new TeamsQueryHandler(DbContext);
+            var team = new Team { Title = "Test Team", Name = "Test FC", Country = "Test Country" };
+
+            await DbContext.Teams.AddAsync(team);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TeamsQuery { Page = 1, PageSize = 10, Title = "NonExistent" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value.Results);
+        }
     }
 }

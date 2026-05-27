@@ -392,5 +392,130 @@ namespace KooliProjekt.Application.UnitTests.Features
             // Assert
             Assert.True(result.IsValid);
         }
+
+        [Fact]
+        public async Task List_should_filter_leaderboards_by_title_search()
+        {
+            // Arrange
+            var handler = new LeaderboardsQueryHandler(DbContext);
+            var leaderboard1 = new Leaderboard { Title = "Premium Leaderboard", TournamentId = 1, UserId = 1, TotalPoints = 100 };
+            var leaderboard2 = new Leaderboard { Title = "Standard Leaderboard", TournamentId = 1, UserId = 2, TotalPoints = 80 };
+            var leaderboard3 = new Leaderboard { Title = "Bronze Leaderboard", TournamentId = 1, UserId = 3, TotalPoints = 50 };
+
+            await DbContext.Leaderboards.AddAsync(leaderboard1);
+            await DbContext.Leaderboards.AddAsync(leaderboard2);
+            await DbContext.Leaderboards.AddAsync(leaderboard3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new LeaderboardsQuery { Page = 1, PageSize = 10, Title = "Premium" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Premium Leaderboard", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_all_leaderboards_when_title_is_empty()
+        {
+            // Arrange
+            var handler = new LeaderboardsQueryHandler(DbContext);
+            var leaderboard1 = new Leaderboard { Title = "Leaderboard 1", TournamentId = 1, UserId = 1, TotalPoints = 100 };
+            var leaderboard2 = new Leaderboard { Title = "Leaderboard 2", TournamentId = 1, UserId = 2, TotalPoints = 80 };
+
+            await DbContext.Leaderboards.AddAsync(leaderboard1);
+            await DbContext.Leaderboards.AddAsync(leaderboard2);
+            await DbContext.SaveChangesAsync();
+
+            var query = new LeaderboardsQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Results.Count);
+        }
+
+        [Fact]
+        public async Task List_should_be_case_insensitive_for_search()
+        {
+            // Arrange
+            var handler = new LeaderboardsQueryHandler(DbContext);
+            var leaderboard = new Leaderboard { Title = "Championship Leaderboard", TournamentId = 1, UserId = 1, TotalPoints = 150 };
+
+            await DbContext.Leaderboards.AddAsync(leaderboard);
+            await DbContext.SaveChangesAsync();
+
+            var query = new LeaderboardsQuery { Page = 1, PageSize = 10, Title = "championship" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Championship Leaderboard", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_empty_when_no_match_found()
+        {
+            // Arrange
+            var handler = new LeaderboardsQueryHandler(DbContext);
+            var leaderboard = new Leaderboard { Title = "Test Leaderboard", TournamentId = 1, UserId = 1, TotalPoints = 100 };
+
+            await DbContext.Leaderboards.AddAsync(leaderboard);
+            await DbContext.SaveChangesAsync();
+
+            var query = new LeaderboardsQuery { Page = 1, PageSize = 10, Title = "NonExistent" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value.Results);
+        }
+
+        [Fact]
+        public async Task List_should_sort_by_total_points_descending()
+        {
+            // Arrange
+            var handler = new LeaderboardsQueryHandler(DbContext);
+            var leaderboard1 = new Leaderboard { Title = "Low Points", TournamentId = 1, UserId = 1, TotalPoints = 30 };
+            var leaderboard2 = new Leaderboard { Title = "High Points", TournamentId = 1, UserId = 2, TotalPoints = 100 };
+            var leaderboard3 = new Leaderboard { Title = "Medium Points", TournamentId = 1, UserId = 3, TotalPoints = 65 };
+
+            await DbContext.Leaderboards.AddAsync(leaderboard1);
+            await DbContext.Leaderboards.AddAsync(leaderboard2);
+            await DbContext.Leaderboards.AddAsync(leaderboard3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new LeaderboardsQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(3, result.Value.Results.Count);
+            Assert.Equal(30, result.Value.Results[0].TotalPoints);
+            Assert.Equal(65, result.Value.Results[1].TotalPoints);
+            Assert.Equal(100, result.Value.Results[2].TotalPoints);
+        }
     }
 }

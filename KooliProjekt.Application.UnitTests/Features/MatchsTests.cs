@@ -396,5 +396,128 @@ namespace KooliProjekt.Application.UnitTests.Features
             // Assert
             Assert.True(result.IsValid);
         }
+
+        [Fact]
+        public async Task List_should_filter_matchs_by_title_search()
+        {
+            // Arrange
+            var handler = new MatchsQueryHandler(DbContext);
+            var match1 = new Match { Title = "Final Championship", TournamentId = 1, HomeTeamId = 1, GuestTeamId = 2, StartTime = DateTime.Now, Status = "Scheduled", Description = "Championship final" };
+            var match2 = new Match { Title = "Semi-Final Round", TournamentId = 1, HomeTeamId = 3, GuestTeamId = 4, StartTime = DateTime.Now, Status = "Scheduled", Description = "Semi-final match" };
+            var match3 = new Match { Title = "Group Stage", TournamentId = 1, HomeTeamId = 5, GuestTeamId = 6, StartTime = DateTime.Now, Status = "Scheduled", Description = "Group stage" };
+
+            await DbContext.Matchs.AddAsync(match1);
+            await DbContext.Matchs.AddAsync(match2);
+            await DbContext.Matchs.AddAsync(match3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new MatchsQuery { Page = 1, PageSize = 10, Title = "Final" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Final Championship", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_filter_matchs_by_description_search()
+        {
+            // Arrange
+            var handler = new MatchsQueryHandler(DbContext);
+            var match1 = new Match { Title = "Title 1", TournamentId = 1, HomeTeamId = 1, GuestTeamId = 2, StartTime = DateTime.Now, Status = "Scheduled", Description = "Friendly international match" };
+            var match2 = new Match { Title = "Title 2", TournamentId = 1, HomeTeamId = 3, GuestTeamId = 4, StartTime = DateTime.Now, Status = "Scheduled", Description = "League match" };
+            var match3 = new Match { Title = "Title 3", TournamentId = 1, HomeTeamId = 5, GuestTeamId = 6, StartTime = DateTime.Now, Status = "Scheduled", Description = "Cup match" };
+
+            await DbContext.Matchs.AddAsync(match1);
+            await DbContext.Matchs.AddAsync(match2);
+            await DbContext.Matchs.AddAsync(match3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new MatchsQuery { Page = 1, PageSize = 10, Title = "Friendly" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Friendly international match", result.Value.Results.First().Description);
+        }
+
+        [Fact]
+        public async Task List_should_return_all_matchs_when_title_is_empty()
+        {
+            // Arrange
+            var handler = new MatchsQueryHandler(DbContext);
+            var match1 = new Match { Title = "Match 1", TournamentId = 1, HomeTeamId = 1, GuestTeamId = 2, StartTime = DateTime.Now, Status = "Scheduled" };
+            var match2 = new Match { Title = "Match 2", TournamentId = 1, HomeTeamId = 3, GuestTeamId = 4, StartTime = DateTime.Now, Status = "Scheduled" };
+
+            await DbContext.Matchs.AddAsync(match1);
+            await DbContext.Matchs.AddAsync(match2);
+            await DbContext.SaveChangesAsync();
+
+            var query = new MatchsQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Results.Count);
+        }
+
+        [Fact]
+        public async Task List_should_be_case_insensitive_for_search()
+        {
+            // Arrange
+            var handler = new MatchsQueryHandler(DbContext);
+            var match = new Match { Title = "Championship Final", TournamentId = 1, HomeTeamId = 1, GuestTeamId = 2, StartTime = DateTime.Now, Status = "Scheduled" };
+
+            await DbContext.Matchs.AddAsync(match);
+            await DbContext.SaveChangesAsync();
+
+            var query = new MatchsQuery { Page = 1, PageSize = 10, Title = "championship" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Championship Final", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_empty_when_no_match_found()
+        {
+            // Arrange
+            var handler = new MatchsQueryHandler(DbContext);
+            var match = new Match { Title = "Test Match", TournamentId = 1, HomeTeamId = 1, GuestTeamId = 2, StartTime = DateTime.Now, Status = "Scheduled" };
+
+            await DbContext.Matchs.AddAsync(match);
+            await DbContext.SaveChangesAsync();
+
+            var query = new MatchsQuery { Page = 1, PageSize = 10, Title = "NonExistent" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value.Results);
+        }
     }
 }

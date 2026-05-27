@@ -23,9 +23,18 @@ namespace KooliProjekt.Application.Features.Tournaments
         public async Task<OperationResult<PagedResult<Tournament>>> Handle(TournamentsQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<Tournament>>();
-            result.Value = await _dbContext
-                .tournaments
-                .OrderBy(list => list.Id)
+
+            IQueryable<Tournament> query = _dbContext.tournaments;
+
+            // Apply search filter if Title is provided
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var searchTerm = request.Title.ToLower();
+                query = query.Where(t => t.Title.ToLower().Contains(searchTerm) || t.Name.ToLower().Contains(searchTerm));
+            }
+
+            result.Value = await query
+                .OrderBy(list => list.Name)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

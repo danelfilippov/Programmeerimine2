@@ -396,5 +396,128 @@ namespace KooliProjekt.Application.UnitTests.Features
             // Assert
             Assert.True(result.IsValid);
         }
+
+        [Fact]
+        public async Task List_should_filter_predictions_by_title_search()
+        {
+            // Arrange
+            var handler = new PredictionsQueryHandler(DbContext);
+            var prediction1 = new Prediction { Title = "Correct Prediction", UserId = 1, MatchId = 1, HomeGoals = 2, GuestGoals = 1, Status = "Correct", Points = 10 };
+            var prediction2 = new Prediction { Title = "Wrong Prediction", UserId = 1, MatchId = 2, HomeGoals = 1, GuestGoals = 1, Status = "Wrong", Points = 0 };
+            var prediction3 = new Prediction { Title = "Pending Prediction", UserId = 1, MatchId = 3, HomeGoals = 3, GuestGoals = 2, Status = "Pending", Points = 0 };
+
+            await DbContext.Predictions.AddAsync(prediction1);
+            await DbContext.Predictions.AddAsync(prediction2);
+            await DbContext.Predictions.AddAsync(prediction3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new PredictionsQuery { Page = 1, PageSize = 10, Title = "Correct" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Correct Prediction", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_filter_predictions_by_status_search()
+        {
+            // Arrange
+            var handler = new PredictionsQueryHandler(DbContext);
+            var prediction1 = new Prediction { Title = "Title 1", UserId = 1, MatchId = 1, HomeGoals = 2, GuestGoals = 1, Status = "Correct", Points = 10 };
+            var prediction2 = new Prediction { Title = "Title 2", UserId = 1, MatchId = 2, HomeGoals = 1, GuestGoals = 1, Status = "Wrong", Points = 0 };
+            var prediction3 = new Prediction { Title = "Title 3", UserId = 1, MatchId = 3, HomeGoals = 3, GuestGoals = 2, Status = "Pending", Points = 0 };
+
+            await DbContext.Predictions.AddAsync(prediction1);
+            await DbContext.Predictions.AddAsync(prediction2);
+            await DbContext.Predictions.AddAsync(prediction3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new PredictionsQuery { Page = 1, PageSize = 10, Title = "Wrong" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Wrong", result.Value.Results.First().Status);
+        }
+
+        [Fact]
+        public async Task List_should_return_all_predictions_when_title_is_empty()
+        {
+            // Arrange
+            var handler = new PredictionsQueryHandler(DbContext);
+            var prediction1 = new Prediction { Title = "Prediction 1", UserId = 1, MatchId = 1, HomeGoals = 2, GuestGoals = 1, Status = "Pending" };
+            var prediction2 = new Prediction { Title = "Prediction 2", UserId = 1, MatchId = 2, HomeGoals = 1, GuestGoals = 1, Status = "Pending" };
+
+            await DbContext.Predictions.AddAsync(prediction1);
+            await DbContext.Predictions.AddAsync(prediction2);
+            await DbContext.SaveChangesAsync();
+
+            var query = new PredictionsQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Results.Count);
+        }
+
+        [Fact]
+        public async Task List_should_be_case_insensitive_for_search()
+        {
+            // Arrange
+            var handler = new PredictionsQueryHandler(DbContext);
+            var prediction = new Prediction { Title = "Expert Prediction", UserId = 1, MatchId = 1, HomeGoals = 2, GuestGoals = 1, Status = "Pending" };
+
+            await DbContext.Predictions.AddAsync(prediction);
+            await DbContext.SaveChangesAsync();
+
+            var query = new PredictionsQuery { Page = 1, PageSize = 10, Title = "expert" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Expert Prediction", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_empty_when_no_match_found()
+        {
+            // Arrange
+            var handler = new PredictionsQueryHandler(DbContext);
+            var prediction = new Prediction { Title = "Test Prediction", UserId = 1, MatchId = 1, HomeGoals = 2, GuestGoals = 1, Status = "Pending" };
+
+            await DbContext.Predictions.AddAsync(prediction);
+            await DbContext.SaveChangesAsync();
+
+            var query = new PredictionsQuery { Page = 1, PageSize = 10, Title = "NonExistent" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value.Results);
+        }
     }
 }

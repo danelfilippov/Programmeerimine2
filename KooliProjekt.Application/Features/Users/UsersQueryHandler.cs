@@ -23,9 +23,17 @@ namespace KooliProjekt.Application.Features.Users
         public async Task<OperationResult<PagedResult<User>>> Handle(UsersQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<User>>();
-            result.Value = await _dbContext
-                .Users
-                .OrderBy(list => list.Id)
+
+            IQueryable<User> query = _dbContext.Users;
+
+            // Apply search filter if Title is provided
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var searchTerm = request.Title.ToLower();
+                query = query.Where(u => u.Title.ToLower().Contains(searchTerm) || u.Name.ToLower().Contains(searchTerm));
+            }
+
+            result.Value = await query
                 .OrderBy(list => list.Name)
                 .GetPagedAsync(request.Page, request.PageSize);
 

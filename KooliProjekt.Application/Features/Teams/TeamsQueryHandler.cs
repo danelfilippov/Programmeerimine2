@@ -23,9 +23,18 @@ namespace KooliProjekt.Application.Features.Teams
         public async Task<OperationResult<PagedResult<Team>>> Handle(TeamsQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<Team>>();
-            result.Value = await _dbContext
-                .Teams
-                .OrderBy(list => list.Id)
+
+            IQueryable<Team> query = _dbContext.Teams;
+
+            // Apply search filter if Title is provided
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var searchTerm = request.Title.ToLower();
+                query = query.Where(t => t.Title.ToLower().Contains(searchTerm) || t.Name.ToLower().Contains(searchTerm));
+            }
+
+            result.Value = await query
+                .OrderBy(list => list.Name)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

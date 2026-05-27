@@ -24,9 +24,18 @@ namespace KooliProjekt.Application.Features.Leaderboards
         {
             var result = new OperationResult<PagedResult<Leaderboard>>();
 
-            result.Value = await _dbContext
-                .Leaderboards
-                .OrderBy(list => list.Id)
+            IQueryable<Leaderboard> query = _dbContext.Leaderboards;
+
+            // Apply search filter if Title is provided
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var searchTerm = request.Title.ToLower();
+                query = query.Where(l => l.Title.ToLower().Contains(searchTerm));
+            }
+
+            result.Value = await query
+                .OrderBy(list => list.TotalPoints)
+                .ThenBy(list => list.Id)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

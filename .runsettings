@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <CodeCoverage>
+    <!-- Exclude specific folders and patterns from code coverage -->
+    <ModulePaths>
+      <Exclude>
+        <!-- Exclude Behaviors -->
+        <ModulePath>.*Behaviors.*</ModulePath>
+        <!-- Exclude Data models -->
+        <ModulePath>.*Data.*</ModulePath>
+        <!-- Exclude DTOs -->
+        <ModulePath>.*Dto.*</ModulePath>
+        <!-- Exclude Infrastructure -->
+        <ModulePath>.*Infrastructure.*</ModulePath>
+        <!-- Exclude Migrations -->
+        <ModulePath>.*Migrations.*</ModulePath>
+      </Exclude>
+    </ModulePaths>
+    <Sources>
+      <Exclude>
+        <!-- Exclude Behaviors -->
+        <Source>.*Behaviors.*</Source>
+        <!-- Exclude Data models -->
+        <Source>.*Data.*</Source>
+        <!-- Exclude DTOs -->
+        <Source>.*Dto.*</Source>
+        <!-- Exclude Infrastructure -->
+        <Source>.*Infrastructure.*</Source>
+        <!-- Exclude Migrations -->
+        <Source>.*Migrations.*</Source>
+      </Exclude>
+    </Sources>
+  </CodeCoverage>
+</RunSettings>

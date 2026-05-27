@@ -396,6 +396,129 @@ namespace KooliProjekt.Application.UnitTests.Features
             // Assert
             Assert.True(result.IsValid);
         }
+
+        [Fact]
+        public async Task List_should_filter_users_by_title_search()
+        {
+            // Arrange
+            var handler = new UsersQueryHandler(DbContext);
+            var user1 = new User { Title = "John Developer", Name = "John Doe", Email = "john@example.com", Password = "hash1", Role = "User" };
+            var user2 = new User { Title = "Jane Designer", Name = "Jane Smith", Email = "jane@example.com", Password = "hash2", Role = "User" };
+            var user3 = new User { Title = "Bob Admin", Name = "Bob Johnson", Email = "bob@example.com", Password = "hash3", Role = "Admin" };
+
+            await DbContext.Users.AddAsync(user1);
+            await DbContext.Users.AddAsync(user2);
+            await DbContext.Users.AddAsync(user3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new UsersQuery { Page = 1, PageSize = 10, Title = "Developer" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("John Developer", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_filter_users_by_name_search()
+        {
+            // Arrange
+            var handler = new UsersQueryHandler(DbContext);
+            var user1 = new User { Title = "Developer 1", Name = "Alice Anderson", Email = "alice@example.com", Password = "hash1", Role = "User" };
+            var user2 = new User { Title = "Designer 1", Name = "Bob Baker", Email = "bob@example.com", Password = "hash2", Role = "User" };
+            var user3 = new User { Title = "Admin 1", Name = "Charlie Brown", Email = "charlie@example.com", Password = "hash3", Role = "Admin" };
+
+            await DbContext.Users.AddAsync(user1);
+            await DbContext.Users.AddAsync(user2);
+            await DbContext.Users.AddAsync(user3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new UsersQuery { Page = 1, PageSize = 10, Title = "Alice" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Alice Anderson", result.Value.Results.First().Name);
+        }
+
+        [Fact]
+        public async Task List_should_return_all_users_when_title_is_empty()
+        {
+            // Arrange
+            var handler = new UsersQueryHandler(DbContext);
+            var user1 = new User { Title = "Test 1", Name = "User 1", Email = "user1@example.com", Password = "hash1", Role = "User" };
+            var user2 = new User { Title = "Test 2", Name = "User 2", Email = "user2@example.com", Password = "hash2", Role = "User" };
+
+            await DbContext.Users.AddAsync(user1);
+            await DbContext.Users.AddAsync(user2);
+            await DbContext.SaveChangesAsync();
+
+            var query = new UsersQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Results.Count);
+        }
+
+        [Fact]
+        public async Task List_should_be_case_insensitive_for_search()
+        {
+            // Arrange
+            var handler = new UsersQueryHandler(DbContext);
+            var user = new User { Title = "Developer Expert", Name = "John Doe", Email = "john@example.com", Password = "hash1", Role = "User" };
+
+            await DbContext.Users.AddAsync(user);
+            await DbContext.SaveChangesAsync();
+
+            var query = new UsersQuery { Page = 1, PageSize = 10, Title = "developer" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Developer Expert", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_empty_when_no_match_found()
+        {
+            // Arrange
+            var handler = new UsersQueryHandler(DbContext);
+            var user = new User { Title = "Test User", Name = "John Doe", Email = "john@example.com", Password = "hash1", Role = "User" };
+
+            await DbContext.Users.AddAsync(user);
+            await DbContext.SaveChangesAsync();
+
+            var query = new UsersQuery { Page = 1, PageSize = 10, Title = "NonExistent" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value.Results);
+        }
     }
-    
+
 }

@@ -396,5 +396,128 @@ namespace KooliProjekt.Application.UnitTests.Features
             // Assert
             Assert.True(result.IsValid);
         }
+
+        [Fact]
+        public async Task List_should_filter_tournaments_by_title_search()
+        {
+            // Arrange
+            var handler = new TournamentsQueryHandler(DbContext);
+            var tournament1 = new Tournament { Title = "World Cup 2024", Name = "FIFA World Cup", Stage = "Group", StartDate = DateTime.Now, Description = "International tournament" };
+            var tournament2 = new Tournament { Title = "European Championship", Name = "UEFA Euro", Stage = "Knockouts", StartDate = DateTime.Now, Description = "European championship" };
+            var tournament3 = new Tournament { Title = "Copa America", Name = "South American Cup", Stage = "Group", StartDate = DateTime.Now, Description = "South America championship" };
+
+            await DbContext.tournaments.AddAsync(tournament1);
+            await DbContext.tournaments.AddAsync(tournament2);
+            await DbContext.tournaments.AddAsync(tournament3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TournamentsQuery { Page = 1, PageSize = 10, Title = "World" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("World Cup 2024", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_filter_tournaments_by_name_search()
+        {
+            // Arrange
+            var handler = new TournamentsQueryHandler(DbContext);
+            var tournament1 = new Tournament { Title = "Title 1", Name = "Premier League", Stage = "Regular Season", StartDate = DateTime.Now };
+            var tournament2 = new Tournament { Title = "Title 2", Name = "La Liga", Stage = "Regular Season", StartDate = DateTime.Now };
+            var tournament3 = new Tournament { Title = "Title 3", Name = "Serie A", Stage = "Regular Season", StartDate = DateTime.Now };
+
+            await DbContext.tournaments.AddAsync(tournament1);
+            await DbContext.tournaments.AddAsync(tournament2);
+            await DbContext.tournaments.AddAsync(tournament3);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TournamentsQuery { Page = 1, PageSize = 10, Title = "Premier" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Premier League", result.Value.Results.First().Name);
+        }
+
+        [Fact]
+        public async Task List_should_return_all_tournaments_when_title_is_empty()
+        {
+            // Arrange
+            var handler = new TournamentsQueryHandler(DbContext);
+            var tournament1 = new Tournament { Title = "Tournament 1", Name = "Tournament A", Stage = "Regular", StartDate = DateTime.Now };
+            var tournament2 = new Tournament { Title = "Tournament 2", Name = "Tournament B", Stage = "Regular", StartDate = DateTime.Now };
+
+            await DbContext.tournaments.AddAsync(tournament1);
+            await DbContext.tournaments.AddAsync(tournament2);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TournamentsQuery { Page = 1, PageSize = 10, Title = "" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Results.Count);
+        }
+
+        [Fact]
+        public async Task List_should_be_case_insensitive_for_search()
+        {
+            // Arrange
+            var handler = new TournamentsQueryHandler(DbContext);
+            var tournament = new Tournament { Title = "International Championship", Name = "World Tournament", Stage = "Final", StartDate = DateTime.Now };
+
+            await DbContext.tournaments.AddAsync(tournament);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TournamentsQuery { Page = 1, PageSize = 10, Title = "international" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("International Championship", result.Value.Results.First().Title);
+        }
+
+        [Fact]
+        public async Task List_should_return_empty_when_no_match_found()
+        {
+            // Arrange
+            var handler = new TournamentsQueryHandler(DbContext);
+            var tournament = new Tournament { Title = "Test Tournament", Name = "Test", Stage = "Regular", StartDate = DateTime.Now };
+
+            await DbContext.tournaments.AddAsync(tournament);
+            await DbContext.SaveChangesAsync();
+
+            var query = new TournamentsQuery { Page = 1, PageSize = 10, Title = "NonExistent" };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(result.Value);
+            Assert.Empty(result.Value.Results);
+        }
     }
 }
