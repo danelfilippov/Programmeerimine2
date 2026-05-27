@@ -1,9 +1,15 @@
 ﻿@page "/lists"
 @inject IApiClient apiClient
+@inject NavigationManager NavManager
 
 <PageTitle>User</PageTitle>
 
 <h1>Users</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p class="alert alert-danger">@errorMessage</p>
+}
 
 @if (users == null)
 {
@@ -28,7 +34,7 @@ else
                     <td>@user.Title</td>
                     <td>
                         <a class="btn btn-success" href="/edit/@user.Id">Edit</a>
-                        <button class="btn btn-danger">Delete</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteUser(user.Id)">Delete</button>
                     </td>
                 </tr>
             }
@@ -38,10 +44,26 @@ else
 
 @code {
     private IList<User> users;
+    private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
         var result = await apiClient.List(1, 100);
         users = result.Value.Results;
+    }
+
+    private async Task DeleteUser(int id)
+    {
+        errorMessage = "";
+        var result = await apiClient.Delete(id);
+        if (!result.HasErrors)
+        {
+            var listResult = await apiClient.List(1, 100);
+            users = listResult.Value.Results;
+        }
+        else
+        {
+            errorMessage = "Failed to delete user";
+        }
     }
 }

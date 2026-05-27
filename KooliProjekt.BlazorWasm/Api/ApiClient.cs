@@ -53,12 +53,9 @@ namespace KooliProjekt.BlazorWasm
 
         public async Task<OperationResult> Delete(int id)
         {
-            var url = _baseUrl + "Delete";
+            var url = _baseUrl + "Delete?id=" + id;
 
-            using var request = new HttpRequestMessage(HttpMethod.Delete, url)
-            {
-                Content = JsonContent.Create(new { id = id })
-            };
+            using var request = new HttpRequestMessage(HttpMethod.Delete, url);
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
 

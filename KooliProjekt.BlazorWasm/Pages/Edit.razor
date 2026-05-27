@@ -6,7 +6,9 @@
 
 <h3>@title</h3>
 
-<EditForm EditContext="editContext" OnValidSubmit="@FormSubmitted">
+<EditForm EditContext="editContext" OnSubmit="@FormSubmitted">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
     <p class="alert-danger">@error</p>
     <div class="form-group row">
         <label class="col-ms-2 col-form-label">ID</label>
@@ -18,6 +20,7 @@
         <label class="col-ms-2 col-form-label">Title</label>
         <div class="col-sm-10">
             <InputText class="form-control" @bind-Value="user.Title" />
+            <ValidationMessage For="@(() => user.Title)" />
         </div>
     </div>
 
@@ -38,27 +41,33 @@
     private EditContext? editContext;
     private User user = new User();
 
+    private ValidationMessageStore? messageStore;
+
     protected override async Task OnInitializedAsync()
     {
         editContext = new EditContext(user);
+        messageStore = new ValidationMessageStore(editContext);
 
-        if(Id == 0)
+        if (Id == 0)
         {
-            title = "Add";            
+            title = "Add";
             return;
-        }        
+        }
 
         var response = await apiClient.Get(Id);
-        if(!response.HasErrors)
+        if (!response.HasErrors)
         {
             user = response.Value;
             editContext = new EditContext(user);
+            messageStore = new ValidationMessageStore(editContext);
         }
     }
 
     private async Task FormSubmitted()
     {
-        error = "";
+        // Eemalda eelnevad veateated
+        messageStore?.Clear();
+
         var result = await apiClient.Save(user);
         if (!result.HasErrors)
         {
@@ -66,6 +75,18 @@
             return;
         }
 
-        error = "Viga andmete salvestamisel!";
+        foreach (var error in result.Errors)
+        {
+            messageStore?.Add(new FieldIdentifier(user, string.Empty), error);
+        }
+
+        foreach (var error in result.PropertyErrors)
+        {
+            var propertyName = error.Key[0].ToString().ToUpper() + error.Key.Substring(1);
+            messageStore?.Add(new FieldIdentifier(user, propertyName), error.Value);
+        }
+
+        // Teavita EditForm'i, et vead on muutunud
+        editContext?.NotifyValidationStateChanged();
     }
 }
